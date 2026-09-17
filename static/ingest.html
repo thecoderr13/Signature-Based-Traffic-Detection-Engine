@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sentinel — Ingest traffic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body data-page="ingest">
+  <div class="app">
+    <nav class="sidebar">
+      <div class="brand">
+        <div class="brand-mark"><svg class="icon" style="width:15px;height:15px"><use href="/icons.svg#i-signatures"/></svg></div>
+        <div>
+          <div class="brand-name">Sentinel</div>
+          <div class="brand-sub">Traffic detection engine</div>
+        </div>
+      </div>
+      <div class="nav">
+        <a class="nav-step" data-page="overview" href="/index.html"><span class="n">01</span><svg class="icon"><use href="/icons.svg#i-overview"/></svg>Overview</a>
+        <a class="nav-step" data-page="ingest" href="/ingest.html"><span class="n">02</span><svg class="icon"><use href="/icons.svg#i-ingest"/></svg>Ingest traffic</a>
+        <a class="nav-step" data-page="signatures" href="/signatures.html"><span class="n">03</span><svg class="icon"><use href="/icons.svg#i-signatures"/></svg>Signature sources</a>
+        <a class="nav-step" data-page="detections" href="/detections.html"><span class="n">04</span><svg class="icon"><use href="/icons.svg#i-detections"/></svg>Detections</a>
+        <a class="nav-step" data-page="report" href="/report.html"><span class="n">05</span><svg class="icon"><use href="/icons.svg#i-report"/></svg>Report</a>
+      </div>
+      <div class="nav-footer">Signature-based detection engine · runs entirely on your machine</div>
+    </nav>
+
+    <main class="main">
+      <div class="topbar">
+        <h1 class="page-title">Ingest traffic</h1>
+        <div class="status-pills" id="status-pills"></div>
+      </div>
+      <p class="page-subtitle">
+        Reads a classic <code class="mono">.pcap</code> file — no root and no live capture needed —
+        and reassembles packets into flows, pulling out hostnames from DNS/TLS SNI/HTTP and a
+        payload hash from each one.
+      </p>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2><svg class="icon"><use href="/icons.svg#i-ingest"/></svg>Choose a capture</h2>
+        </div>
+        <div class="panel-body">
+          <div class="control-row">
+            <div class="field" style="min-width:260px">
+              <label for="pcap-select">Available files</label>
+              <select id="pcap-select"></select>
+            </div>
+            <button class="btn primary" id="run-ingest"><svg class="icon"><use href="/icons.svg#i-play"/></svg>Run ingestion</button>
+            <button class="btn" id="refresh-list"><svg class="icon"><use href="/icons.svg#i-refresh"/></svg>Refresh list</button>
+          </div>
+
+          <div class="section-label">Or upload your own</div>
+          <label class="upload-drop" for="file-input">
+            <svg class="icon" style="width:16px;height:16px"><use href="/icons.svg#i-upload"/></svg>
+            <span id="upload-label">Click to choose a .pcap file, or drag one here</span>
+          </label>
+          <input type="file" id="file-input" accept=".pcap" style="display:none" />
+
+          <div class="callout" style="margin-top:14px" id="no-pcaps-hint" hidden>
+            <svg class="icon"><use href="/icons.svg#i-activity"/></svg>
+            <div>
+              No capture files found yet. Generate a small synthetic one (no network or root
+              required) with <code class="mono">cargo run --bin gen-sample-pcap</code>, or upload
+              your own above, then refresh the list.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2><svg class="icon"><use href="/icons.svg#i-arrow-right"/></svg>Flows</h2>
+          <p id="flow-summary">Nothing ingested yet</p>
+        </div>
+        <div class="panel-body tight">
+          <div id="flow-table-wrap">
+            <div class="empty-state">
+              <svg class="icon"><use href="/icons.svg#i-ingest"/></svg>
+              <div>Run ingestion to see assembled flows here.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2><svg class="icon"><use href="/icons.svg#i-activity"/></svg>Pipeline activity<span class="live-dot" style="margin-left:6px"></span></h2>
+          <p>Live, session-wide</p>
+        </div>
+        <div class="console" id="console"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script src="/js/ingest.js"></script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sentinel — Signature sources</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body data-page="signatures">
+  <div class="app">
+    <nav class="sidebar">
+      <div class="brand">
+        <div class="brand-mark"><svg class="icon" style="width:15px;height:15px"><use href="/icons.svg#i-signatures"/></svg></div>
+        <div>
+          <div class="brand-name">Sentinel</div>
+          <div class="brand-sub">Traffic detection engine</div>
+        </div>
+      </div>
+      <div class="nav">
+        <a class="nav-step" data-page="overview" href="/index.html"><span class="n">01</span><svg class="icon"><use href="/icons.svg#i-overview"/></svg>Overview</a>
+        <a class="nav-step" data-page="ingest" href="/ingest.html"><span class="n">02</span><svg class="icon"><use href="/icons.svg#i-ingest"/></svg>Ingest traffic</a>
+        <a class="nav-step" data-page="signatures" href="/signatures.html"><span class="n">03</span><svg class="icon"><use href="/icons.svg#i-signatures"/></svg>Signature sources</a>
+        <a class="nav-step" data-page="detections" href="/detections.html"><span class="n">04</span><svg class="icon"><use href="/icons.svg#i-detections"/></svg>Detections</a>
+        <a class="nav-step" data-page="report" href="/report.html"><span class="n">05</span><svg class="icon"><use href="/icons.svg#i-report"/></svg>Report</a>
+      </div>
+      <div class="nav-footer">Signature-based detection engine · runs entirely on your machine</div>
+    </nav>
+
+    <main class="main">
+      <div class="topbar">
+        <h1 class="page-title">Signature sources</h1>
+        <div class="status-pills" id="status-pills"></div>
+      </div>
+      <p class="page-subtitle">
+        Pulls real indicators of compromise from abuse.ch's ThreatFox and URLhaus community
+        APIs, then caches them to disk. A fetch only ever happens here — the detection engine
+        always matches against the cached set, never the network.
+      </p>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2><svg class="icon"><use href="/icons.svg#i-server"/></svg>Fetch signatures</h2>
+        </div>
+        <div class="panel-body">
+          <div class="control-row">
+            <div class="field" style="min-width:220px">
+              <label for="source-select">Source</label>
+              <select id="source-select">
+                <option value="all">All configured sources</option>
+                <option value="threatfox">ThreatFox only</option>
+                <option value="urlhaus">URLhaus only</option>
+                <option value="offline">Offline sample set</option>
+              </select>
+            </div>
+            <button class="btn primary" id="fetch-btn"><svg class="icon"><use href="/icons.svg#i-refresh"/></svg>Fetch signatures</button>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-muted)">
+              <input type="checkbox" id="force-refresh" /> ignore cache
+            </label>
+          </div>
+          <div id="key-callout"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2><svg class="icon"><use href="/icons.svg#i-shield-check"/></svg>Loaded indicators</h2>
+          <p id="sig-summary">Not fetched yet</p>
+        </div>
+        <div class="panel-body tight">
+          <div id="sig-table-wrap">
+            <div class="empty-state">
+              <svg class="icon"><use href="/icons.svg#i-signatures"/></svg>
+              <div>Fetch a signature set to see loaded indicators here.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2><svg class="icon"><use href="/icons.svg#i-activity"/></svg>Pipeline activity<span class="live-dot" style="margin-left:6px"></span></h2>
+          <p>Live, session-wide</p>
+        </div>
+        <div class="console" id="console"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script src="/js/signatures.js"></script>
+</body>
+</html>

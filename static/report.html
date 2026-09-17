@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sentinel — Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body data-page="report">
+  <div class="app">
+    <nav class="sidebar">
+      <div class="brand">
+        <div class="brand-mark"><svg class="icon" style="width:15px;height:15px"><use href="/icons.svg#i-signatures"/></svg></div>
+        <div>
+          <div class="brand-name">Sentinel</div>
+          <div class="brand-sub">Traffic detection engine</div>
+        </div>
+      </div>
+      <div class="nav">
+        <a class="nav-step" data-page="overview" href="/index.html"><span class="n">01</span><svg class="icon"><use href="/icons.svg#i-overview"/></svg>Overview</a>
+        <a class="nav-step" data-page="ingest" href="/ingest.html"><span class="n">02</span><svg class="icon"><use href="/icons.svg#i-ingest"/></svg>Ingest traffic</a>
+        <a class="nav-step" data-page="signatures" href="/signatures.html"><span class="n">03</span><svg class="icon"><use href="/icons.svg#i-signatures"/></svg>Signature sources</a>
+        <a class="nav-step" data-page="detections" href="/detections.html"><span class="n">04</span><svg class="icon"><use href="/icons.svg#i-detections"/></svg>Detections</a>
+        <a class="nav-step" data-page="report" href="/report.html"><span class="n">05</span><svg class="icon"><use href="/icons.svg#i-report"/></svg>Report</a>
+      </div>
+      <div class="nav-footer">Signature-based detection engine · runs entirely on your machine</div>
+    </nav>
+
+    <main class="main">
+      <div class="topbar">
+        <h1 class="page-title">Report</h1>
+        <div class="status-pills" id="status-pills"></div>
+      </div>
+      <p class="page-subtitle">Aggregate summary of the most recent detection run, with a full JSON export for further analysis.</p>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2><svg class="icon"><use href="/icons.svg#i-report"/></svg>Summary</h2>
+          <a class="btn primary" href="/api/export" download="sentinel-report.json"><svg class="icon"><use href="/icons.svg#i-download"/></svg>Export JSON</a>
+        </div>
+        <div class="panel-body">
+          <div class="stat-row" id="stat-row"></div>
+          <div style="margin-top:22px" id="bars"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2><svg class="icon"><use href="/icons.svg#i-x-circle"/></svg>Malicious flows</h2>
+          <p id="malicious-count"></p>
+        </div>
+        <div class="panel-body tight">
+          <div id="malicious-wrap">
+            <div class="empty-state">
+              <svg class="icon"><use href="/icons.svg#i-check-circle"/></svg>
+              <div>No malicious flows in the current report.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script src="/js/report.js"></script>
+</body>
+</html>

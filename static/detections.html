@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sentinel — Detections</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body data-page="detections">
+  <div class="app">
+    <nav class="sidebar">
+      <div class="brand">
+        <div class="brand-mark"><svg class="icon" style="width:15px;height:15px"><use href="/icons.svg#i-signatures"/></svg></div>
+        <div>
+          <div class="brand-name">Sentinel</div>
+          <div class="brand-sub">Traffic detection engine</div>
+        </div>
+      </div>
+      <div class="nav">
+        <a class="nav-step" data-page="overview" href="/index.html"><span class="n">01</span><svg class="icon"><use href="/icons.svg#i-overview"/></svg>Overview</a>
+        <a class="nav-step" data-page="ingest" href="/ingest.html"><span class="n">02</span><svg class="icon"><use href="/icons.svg#i-ingest"/></svg>Ingest traffic</a>
+        <a class="nav-step" data-page="signatures" href="/signatures.html"><span class="n">03</span><svg class="icon"><use href="/icons.svg#i-signatures"/></svg>Signature sources</a>
+        <a class="nav-step" data-page="detections" href="/detections.html"><span class="n">04</span><svg class="icon"><use href="/icons.svg#i-detections"/></svg>Detections</a>
+        <a class="nav-step" data-page="report" href="/report.html"><span class="n">05</span><svg class="icon"><use href="/icons.svg#i-report"/></svg>Report</a>
+      </div>
+      <div class="nav-footer">Signature-based detection engine · runs entirely on your machine</div>
+    </nav>
+
+    <main class="main">
+      <div class="topbar">
+        <h1 class="page-title">Detections</h1>
+        <div class="status-pills" id="status-pills"></div>
+      </div>
+      <p class="page-subtitle">
+        Matches every ingested flow against the loaded signature set, in priority order URL →
+        domain → IP → payload hash. Anything that doesn't exactly match but still looks off
+        (high-entropy hostname, a backdoor-style port) is flagged Suspicious instead.
+      </p>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2><svg class="icon"><use href="/icons.svg#i-detections"/></svg>Run detection</h2>
+        </div>
+        <div class="panel-body">
+          <div class="control-row">
+            <button class="btn primary" id="run-detect"><svg class="icon"><use href="/icons.svg#i-play"/></svg>Run detection</button>
+            <span class="muted" id="prereq-hint"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="toolbar">
+          <h2 style="font-size:14px;font-weight:600;margin:0;display:flex;align-items:center;gap:8px">
+            <svg class="icon" style="width:15px;height:15px;color:var(--ink-faint)"><use href="/icons.svg#i-arrow-right"/></svg>
+            Results
+          </h2>
+          <div class="filter-tabs" id="filter-tabs">
+            <button class="filter-tab active" data-filter="all">All</button>
+            <button class="filter-tab" data-filter="Malicious">Malicious</button>
+            <button class="filter-tab" data-filter="Suspicious">Suspicious</button>
+            <button class="filter-tab" data-filter="Benign">Benign</button>
+          </div>
+        </div>
+        <div class="panel-body tight">
+          <div id="detections-table-wrap">
+            <div class="empty-state">
+              <svg class="icon"><use href="/icons.svg#i-detections"/></svg>
+              <div>Run detection to see verdicts here.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2><svg class="icon"><use href="/icons.svg#i-activity"/></svg>Pipeline activity<span class="live-dot" style="margin-left:6px"></span></h2>
+          <p>Live, session-wide</p>
+        </div>
+        <div class="console" id="console"></div>
+      </div>
+    </main>
+  </div>
+
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div>
+        <div id="drawer-badge"></div>
+        <div class="mono muted" style="margin-top:6px;font-size:12px" id="drawer-flow"></div>
+      </div>
+      <button class="drawer-close" id="drawer-close"><svg class="icon" style="width:18px;height:18px"><use href="/icons.svg#i-close"/></svg></button>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script src="/js/detections.js"></script>
+</body>
+</html>
