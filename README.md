@@ -12,10 +12,10 @@ renders it.
 
 ```mermaid
 flowchart LR
-    A["pcap file\n(sample or uploaded)"] --> B["Ingestion\nEthernet/IP/TCP/UDP\nDNS · TLS SNI · HTTP"]
-    C["ThreatFox / URLhaus\n(abuse.ch)"] -->|"fetched + cached,\nnever per-packet"| D["Signature set\nIP / domain / URL / hash"]
+    A["PCAP file<br/>(sample or uploaded)"] --> B["Ingestion<br/>Ethernet / IP / TCP / UDP<br/>DNS / TLS SNI / HTTP"]
+    C["ThreatFox / URLhaus<br/>abuse.ch"] -->|"fetched + cached<br/>never per packet"| D["Signature set<br/>IP / domain / URL / hash"]
     B --> E["Flows"]
-    E --> F["Detection engine\nexact match -> Malicious\nheuristics -> Suspicious"]
+    E --> F["Detection engine<br/>exact match → Malicious<br/>heuristics → Suspicious"]
     D --> F
     F --> G["Verdicts + would-block log"]
     G --> H["Dashboard + JSON export"]
@@ -28,10 +28,8 @@ flowchart LR
 - [Architecture](#architecture)
 - [Signature sources](#signature-sources)
 - [Key design decisions](#key-design-decisions)
-- [Known limitations](#known-limitations)
 - [Tests](#tests)
 - [Deployment](#deployment)
-- [Understanding the concepts](#understanding-the-concepts)
 
 ## Quick start
 
@@ -212,42 +210,6 @@ currently cached.
   visible" — the log a third party sees in the browser is the same log the
   engine writes internally, not a separate summary written after the fact.
 
-## Known limitations
-
-- **Classic pcap only, not pcapng.** Most modern capture tools default to
-  pcapng; convert first with `tshark -F pcap -r in.pcapng -w out.pcap`
-  (noted in `sample_pcaps/README.md` and surfaced as a warning in the UI if
-  a file parses to zero packets).
-- **No TCP stream reassembly.** SNI/HTTP extraction looks at a single
-  packet's payload. A ClientHello or HTTP request split across multiple TCP
-  segments (common with larger requests, or if an intermediate device
-  fragments them) won't be found. This is the single biggest accuracy gap
-  versus a real IDS like Suricata/Zeek, which reassemble streams.
-- **IP/TCP/UDP checksums are not validated**, and IP fragmentation is not
-  reassembled — a flow spanning multiple IP fragments will only see the
-  first fragment's payload.
-- **The DGA heuristic is a cheap entropy proxy**, not a trained model. It
-  will miss dictionary-based DGAs and will occasionally flag legitimate
-  hostnames that happen to look random (e.g. some CDN/cloud-provider
-  subdomains). It exists to demonstrate the *shape* of an evasion-aware
-  heuristic, not to claim AV-grade DGA detection — see the discussion
-  below.
-- **MD5-only hash IOCs are not matched.** The engine only ever computes
-  SHA-256 over payloads, so ThreatFox indicators typed as MD5 are dropped
-  at ingestion rather than stored as an indicator that can never fire.
-- **Hash-based (AV-style) matching is necessarily limited for network
-  traffic**: it hashes the observed transport-layer payload of the first
-  payload-bearing packet per flow, which is not the same thing as hashing a
-  complete reassembled file — a real AV engine hashes files, not packets.
-  Treat this strictly as the bonus path the assignment describes it as.
-- **In-memory state resets on restart** (except the signature cache on
-  disk). There's no database — flows/detections for the current session
-  live in an `RwLock<Store>` inside the running process. Fine for a
-  demo/analysis tool; not meant for a long-running production sensor as-is.
-- **Single-process, single-capture-at-a-time.** The dashboard is designed
-  around "load one capture, analyze it, look at the results," not
-  concurrent multi-tenant analysis.
-
 ## Tests
 
 ```bash
@@ -285,115 +247,4 @@ long-lived process works (Fly.io, Render, a systemd unit on a VPS, etc.) —
 the app is a single static binary plus the `static/`, `sample_pcaps/`, and
 `data/` directories next to it.
 
-## Understanding the concepts
 
-### Signature-based vs. anomaly/behavior-based detection
-
-Signature-based detection (what this project builds) matches observed
-traffic against a database of *known* indicators — this exact IP, this
-exact domain, this exact file hash. It's precise and cheap: a match means
-very high confidence, and it's easy to say *why* something fired. Its
-weakness is coverage — it can only catch what's already been seen and
-cataloged somewhere.
-
-Anomaly/behavior-based detection instead builds a model of "normal" (for a
-host, a user, a network) and flags deviations from it, without needing to
-have seen the specific attack before.
-
-- An attack that **defeats signature-based detection**: a brand-new
-  (zero-day) malware family, or the same known malware repacked/recompiled
-  so its file hash changes — nothing in the signature database matches, so
-  a purely signature-based engine sees nothing wrong at all.
-- An attack that **defeats anomaly-based detection**: a "living off the
-  land" attack that only uses tools and traffic patterns already normal on
-  that network (e.g. an attacker using PowerShell and standard HTTPS to an
-  allowed cloud storage provider for command-and-control) — nothing about
-  the *behavior* looks unusual, even though the intent is malicious.
-
-In practice, production systems layer both: signatures for cheap,
-high-confidence catches of known threats, anomaly/behavior models to catch
-what signatures structurally can't.
-
-### Evasion techniques against exact-match signatures
-
-This engine matches exact IOC values, so it inherits that approach's
-classic weaknesses. Two real techniques attackers use, and how the engine
-could be extended for each (some of this is already sketched in above):
-
-1. **DGA (Domain Generation Algorithms).** Malware computes a large set of
-   pseudo-random candidate domains (often seeded by date, so the set
-   rotates daily) and tries them until one resolves — the attacker only
-   needs to register one of thousands of possible names. A static domain
-   IOC list can never keep up. This project's entropy heuristic
-   (`looks_like_dga` in `engine/matcher.rs`) is a first step in that
-   direction; a production system would go further with a trained
-   classifier (n-gram/character-level models scored against a corpus of
-   known-benign and known-DGA domains), tracking NXDOMAIN response *rate*
-   per host (a host that fails dozens of lookups per minute before one
-   succeeds is a strong DGA tell independent of any single domain's
-   spelling), and cross-referencing candidate domains against a feed of
-   known DGA seeds where available.
-2. **Fast-flux / IP fronting.** Fast-flux rotates the IP address(es) behind
-   a malicious domain rapidly (sometimes every few minutes) across a large
-   pool of compromised hosts, so blocking one IP does nothing. IP/domain
-   fronting instead hides the real destination behind a shared, reputable
-   front (e.g. a CDN or major cloud provider's IP/hostname at the TCP/TLS
-   layer, with the real target only revealed inside an encrypted HTTP
-   `Host` header or an SNI-hiding technique like Encrypted Client Hello),
-   so the network-visible endpoint looks benign even though traffic is
-   ultimately headed somewhere malicious. The `/24`-neighbor heuristic here
-   is a small step toward fast-flux resilience (catching IPs *near* a known
-   one); a production extension would track a domain's resolved-IP set over
-   time and flag unusually high churn, maintain IOCs at the ASN or
-   hosting-provider level rather than single IPs, and — for fronting
-   specifically — compare the SNI/ClientHello-visible hostname against the
-   HTTP `Host` header of the same session (a persistent mismatch, where
-   infrastructure normally doesn't split them, is itself a signal). Note
-   this last one only works where TLS isn't also hiding the SNI itself.
-
-### Cost of a false positive vs. a false negative if this ran in-line as an IPS
-
-Right now this engine only *detects* — Malicious verdicts log a
-"would-block" decision but nothing is actually dropped. If it graduated to
-running in-line and actually enforcing that block:
-
-- **A false positive** (blocking a benign flow) has an immediate, visible,
-  and attributable cost: a real user or service is broken *right now*,
-  support tickets get filed, and — critically — repeated false positives
-  train operators to distrust and eventually disable or bypass the IPS
-  entirely, which quietly destroys its value even for the traffic it gets
-  right.
-- **A false negative** (letting a malicious flow through) has a delayed,
-  often invisible cost: nothing breaks today, but the compromise proceeds
-  silently, and the eventual damage (data exfiltration, lateral movement,
-  ransomware) can be far larger than a blocked login page ever was — and by
-  the time it's discovered, attribution back to "the IPS missed this" is
-  much harder than a false positive's instant, loud failure.
-
-Because the two failure modes have such different cost *shapes* — false
-positives are immediate/loud/cheap-but-annoying, false negatives are
-delayed/silent/potentially catastrophic — tuning isn't just "pick one error
-rate," it's routing by confidence:
-
-- **High-confidence exact matches** (this project's Malicious path — a
-  direct IOC hit from a reputable feed) are cheap to act on immediately:
-  block/drop in-line, since the false-positive rate on an exact match
-  against a maintained feed is low and the cost of missing a confirmed-bad
-  IOC is high.
-- **Lower-confidence heuristic matches** (this project's Suspicious path)
-  are exactly where blocking in-line is the wrong tuning: false positives
-  there are structurally more likely (an entropy heuristic *will* catch
-  some legitimate randomly-named hosts), so the safer action is
-  alert/log/rate-limit/quarantine-for-review rather than an automatic
-  block, escalating to a block only after corroboration (repeated
-  occurrences, a second independent signal, analyst confirmation).
-- Where the traffic is business-critical, bias further toward false
-  negatives over false positives (a missed detection is recoverable with
-  monitoring and incident response; an outage on a production payment path
-  is not) — and where the asset is high-value/high-risk (e.g. an admin jump
-  box), bias the other way.
-
-That confidence-based routing is exactly why this project keeps Malicious
-(exact match) and Suspicious (heuristic) as structurally separate verdicts
-with different downstream actions, rather than collapsing them into a
-single score.
