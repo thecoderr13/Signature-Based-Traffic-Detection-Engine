@@ -250,7 +250,7 @@ the app is a single static binary plus the `static/`, `sample_pcaps/`, and
 ## Demo video
 
 <video controls width="100%" playsinline preload="metadata">
-  <source src="./Screencast from 2026-09-17 11-52-47.mp4" type="video/mp4" />
+  <source src="./Screencast%20from%202026-09-17%2011-52-47.mp4" type="video/mp4" />
   Your browser does not support the video tag.
 </video>
 
