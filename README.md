@@ -249,6 +249,8 @@ the app is a single static binary plus the `static/`, `sample_pcaps/`, and
 
 ## Demo
 
-<video src="./demo.mp4" width="100%" controls></video>
+https://github.com/user-attachments/assets/3da2360d-58d4-4467-ba25-f03201fbe687
+
+
 
 
