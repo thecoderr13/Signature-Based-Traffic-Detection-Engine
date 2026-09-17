@@ -247,11 +247,8 @@ long-lived process works (Fly.io, Render, a systemd unit on a VPS, etc.) —
 the app is a single static binary plus the `static/`, `sample_pcaps/`, and
 `data/` directories next to it.
 
-## Demo video
+## Demo
 
-<video controls width="100%" playsinline preload="metadata">
-  <source src="./Screencast%20from%202026-09-17%2011-52-47.mp4" type="video/mp4" />
-  Your browser does not support the video tag.
-</video>
+<video src="./demo.mp4" width="100%" controls></video>
 
 
